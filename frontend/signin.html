@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIRA — Sign In</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@200;300;400;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --navy:   #040812;
+    --blue:   #2E2EFF;
+    --cyan:   #00D4FF;
+    --white:  #E8F0FF;
+    --gray:   #6B7A99;
+    --green:  #00FF88;
+    --border: rgba(46,46,255,0.35);
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Exo 2', sans-serif;
+    background: #000000;
+  }
+
+  .bg-image {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('bg_sphere.png') center center / cover no-repeat;
+    z-index: 0;
+  }
+
+  .bg-extend {
+    position: fixed;
+    top: 0; right: 0;
+    width: 40%;
+    height: 100%;
+    background: transparent;
+    z-index: 0;
+  }
+
+  #anim {
+    position: fixed;
+    top: 0; left: 0;
+    width: 65%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .fade-right {
+    position: fixed;
+    top: 0; left: 30%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(90deg,
+      rgba(3,6,15,0) 0%,
+      rgba(3,6,15,0.15) 100%
+    );
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .scanline {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg,
+      transparent, transparent 2px,
+      rgba(46,46,255,0.01) 2px,
+      rgba(46,46,255,0.01) 4px
+    );
+    pointer-events: none;
+    z-index: 4;
+  }
+
+  .header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 64px;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(16px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 56px;
+    z-index: 20;
+  }
+
+  .logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 26px; font-weight: 900;
+    letter-spacing: 8px; color: var(--blue);
+    text-shadow: 0 0 30px rgba(46,46,255,0.9);
+  }
+  .logo em { color: var(--white); font-style: normal; }
+
+  .header-right {
+    font-family: 'Orbitron', monospace;
+    font-size: 9px; color: var(--white);
+    letter-spacing: 4px; text-transform: uppercase;
+  }
+
+  .right-panel {
+    position: fixed;
+    top: 64px; right: 0;
+    width: 580px; bottom: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    padding: 40px 64px;
+  }
+
+  .login-card {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 50px 46px;
+
+    position: relative;
+  }
+
+
+
+  .login-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 17px; font-weight: 700;
+    color: var(--white); letter-spacing: 5px;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+
+  .login-sub { font-size:11px; color:var(--white); letter-spacing:2px; margin-bottom:34px; }
+
+  .form-group { margin-bottom: 20px; }
+
+  .form-label {
+    display: block;
+    font-family: 'Orbitron', monospace;
+    font-size: 9px; color: var(--cyan);
+    letter-spacing: 4px; text-transform: uppercase;
+    margin-bottom: 9px;
+  }
+
+  .form-input {
+    width: 100%;
+    background: rgba(46,46,255,0.06);
+    border: none;
+    padding: 13px 16px;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 14px; color: var(--white);
+    letter-spacing: 1px; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-input::placeholder { color: rgba(107,122,153,0.55); font-size:13px; }
+  .form-input:focus { border-color:var(--blue); box-shadow:0 0 20px rgba(46,46,255,0.18); }
+
+  .form-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 26px;
+  }
+
+  .remember { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--gray); letter-spacing:1px; cursor:pointer; }
+  .remember input { accent-color:var(--blue); width:13px; height:13px; }
+  .forgot { font-size:11px; color:var(--cyan); letter-spacing:1px; cursor:pointer; }
+
+  .btn-signin {
+    width: 100%;
+    background: var(--blue); border: none;
+    padding: 15px;
+    font-family: 'Orbitron', monospace;
+    font-size: 11px; font-weight: 700;
+    color: var(--white); letter-spacing: 5px;
+    text-transform: uppercase; cursor: pointer;
+    box-shadow: 0 0 30px rgba(46,46,255,0.4);
+    transition: box-shadow 0.2s, transform 0.1s;
+    margin-bottom: 22px;
+  }
+  .btn-signin:hover { box-shadow:0 0 50px rgba(46,46,255,0.7); transform:translateY(-1px); }
+
+  .divider { display:flex; align-items:center; gap:14px; margin-bottom:18px; }
+  .divider-line { flex:1; height:1px; background:var(--border); }
+  .divider-text { font-size:9px; color:var(--gray); letter-spacing:3px; text-transform:uppercase; }
+
+  .btn-sso {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 13px;
+    font-family: 'Orbitron', monospace;
+    font-size: 9px; color: var(--gray);
+    letter-spacing: 4px; text-transform: uppercase;
+    cursor: pointer; margin-bottom: 26px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-sso:hover { border-color:var(--cyan); color:var(--cyan); }
+
+  .mfa-badge {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 14px;
+    background: rgba(0,255,136,0.05);
+    border: 1px solid rgba(0,255,136,0.18);
+  }
+
+  .mfa-dot {
+    width:7px; height:7px; border-radius:50%;
+    background:var(--green);
+    box-shadow:0 0 8px var(--green);
+    animation: mfaPulse 2s infinite;
+  }
+  @keyframes mfaPulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%     { opacity:0.4; transform:scale(0.7); }
+  }
+
+  .mfa-text {
+    font-family: 'Orbitron', monospace;
+    font-size: 8px; color: var(--green);
+    letter-spacing: 3px; text-transform: uppercase;
+  }
+
+  .bottom-bar {
+    position: fixed;
+    bottom:0; left:0; right:0;
+    height: 44px;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(12px);
+    display: flex; align-items: center;
+    justify-content: center; gap: 48px;
+    z-index: 20;
+  }
+
+  .bottom-item {
+    font-family: 'Orbitron', monospace;
+    font-size: 8px; color: var(--white);
+    letter-spacing: 3px; text-transform: uppercase;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .online-dot {
+    width:6px; height:6px; border-radius:50%;
+    background:var(--green);
+    box-shadow:0 0 6px var(--green);
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-image"></div>
+<div class="bg-extend"></div>
+<canvas id="anim"></canvas>
+<div class="fade-right"></div>
+<div class="scanline"></div>
+
+<div class="header">
+  <div class="logo">AI<em>RA</em></div>
+  <div class="header-right">Agentic Identity &amp; Risk Administration &nbsp;·&nbsp; Sign In</div>
+</div>
+
+<div class="right-panel">
+  <div class="login-card">
+    <div class="login-title">Secure Access</div>
+    <div class="login-sub">Sign in to your AIRA enterprise console</div>
+
+    <div class="form-group">
+      <label class="form-label">Enterprise Email</label>
+      <input class="form-input" type="email" placeholder="you@enterprise.com">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" placeholder="••••••••••••">
+    </div>
+
+    <div class="form-row">
+      <label class="remember"><input type="checkbox"> Remember this device</label>
+      <span class="forgot">Forgot password?</span>
+    </div>
+
+    <button class="btn-signin">Sign In to AIRA</button>
+
+
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="bottom-item"><div class="online-dot"></div>All Systems Operational</div>
+  <div class="bottom-item" id="live-clock">--:--:-- UTC</div>
+</div>
+
+<script>
+const canvas = document.getElementById('anim');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+  canvas.width  = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Sphere centre in original image ~52% x, 40% y
+const SX = () => canvas.width  * 0.51 - 20;
+const SY = () => canvas.height * 0.40;
+
+let t = 0;
+
+// Orbital rings matching original image perspective (tilted ellipses)
+const rings = [
+  { rx: 90,  ry: 16, speed: 0.009,  dotCount: 3, color: [255,255,255], phase: 0.0 },
+  { rx: 138, ry: 25, speed: 0.007,  dotCount: 4, color: [180,215,255], phase: 1.2 },
+  { rx: 192, ry: 36, speed: 0.0055, dotCount: 5, color: [150,195,255], phase: 2.5 },
+  { rx: 252, ry: 47, speed: 0.0042, dotCount: 5, color: [120,170,255], phase: 0.7 },
+  { rx: 318, ry: 60, speed: 0.0032, dotCount: 6, color: [100,155,255], phase: 3.2 },
+  { rx: 390, ry: 74, speed: 0.0024, dotCount: 7, color: [80,135,255],  phase: 1.6 },
+];
+
+// Bokeh
+const bokeh = Array.from({length: 18}, () => ({
+  x: Math.random() * 0.65,
+  y: Math.random(),
+  r: Math.random() * 5 + 2,
+  alpha: Math.random() * 0.35 + 0.08,
+  phase: Math.random() * Math.PI * 2,
+  speed: Math.random() * 0.007 + 0.002,
+  vx: (Math.random() - 0.5) * 0.0002,
+  vy: (Math.random() - 0.5) * 0.00015,
+}));
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const cx = SX(), cy = SY();
+
+  // ── LIGHT RAYS from sphere base (like original) ──
+  for (let i = 0; i < 20; i++) {
+    const angle = (i / 20) * Math.PI * 2 + t * 0.0025;
+    const len = 150 + Math.sin(t * 0.04 + i * 0.5) * 35;
+    const x1 = cx + Math.cos(angle) * 18;
+    const y1 = cy + Math.sin(angle) * 18;
+    const x2 = cx + Math.cos(angle) * (18 + len);
+    const y2 = cy + Math.sin(angle) * (18 + len * 0.32);
+
+    const g = ctx.createLinearGradient(x1, y1, x2, y2);
+    g.addColorStop(0, 'rgba(160,195,255,0.5)');
+    g.addColorStop(0.4, 'rgba(80,130,255,0.18)');
+    g.addColorStop(1, 'rgba(40,80,255,0)');
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 1.1;
+    ctx.stroke();
+  }
+
+  // Wider soft rays
+  for (let i = 0; i < 10; i++) {
+    const angle = (i / 10) * Math.PI * 2 + t * 0.0015;
+    const len = 300 + Math.sin(t * 0.018 + i) * 55;
+    const x1 = cx + Math.cos(angle) * 18;
+    const y1 = cy + Math.sin(angle) * 18;
+    const x2 = cx + Math.cos(angle) * len;
+    const y2 = cy + Math.sin(angle) * (18 + len * 0.35);
+
+    const g = ctx.createLinearGradient(x1, y1, x2, y2);
+    g.addColorStop(0, 'rgba(60,110,255,0.2)');
+    g.addColorStop(1, 'rgba(30,70,255,0)');
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 4;
+    ctx.stroke();
+  }
+
+  // ── ORBITAL RINGS + MOVING DOTS ──
+  rings.forEach((ring, ri) => {
+    ctx.save();
+    ctx.translate(cx, cy + 14);
+    ctx.rotate(-0.33); // match original image tilt
+
+    // Ring trace
+    ctx.beginPath();
+    ctx.ellipse(0, 0, ring.rx, ring.ry, 0, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(100,145,255,0.15)`;
+    ctx.lineWidth = 0.7;
+    ctx.stroke();
+
+    // Moving dots
+    for (let d = 0; d < ring.dotCount; d++) {
+      const angle = ring.phase + (d / ring.dotCount) * Math.PI * 2 + t * ring.speed;
+      const dx = Math.cos(angle) * ring.rx;
+      const dy = Math.sin(angle) * ring.ry;
+      const [r, g2, b] = ring.color;
+      const bright = (Math.sin(t * 0.06 + d + ri * 0.8) + 1) / 2;
+      const dotSize = 2.8 + bright * 1.8;
+
+      // Glow halo
+      const grd = ctx.createRadialGradient(dx, dy, 0, dx, dy, 10);
+      grd.addColorStop(0, `rgba(${r},${g2},${b},0.55)`);
+      grd.addColorStop(1, 'transparent');
+      ctx.beginPath();
+      ctx.arc(dx, dy, 10, 0, Math.PI * 2);
+      ctx.fillStyle = grd;
+      ctx.fill();
+
+      // Core dot
+      ctx.beginPath();
+      ctx.arc(dx, dy, dotSize, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${r},${g2},${b},0.95)`;
+      ctx.fill();
+
+      // Trail
+      for (let tr = 1; tr <= 6; tr++) {
+        const ta = angle - tr * 0.055;
+        const tx2 = Math.cos(ta) * ring.rx;
+        const ty2 = Math.sin(ta) * ring.ry;
+        ctx.beginPath();
+        ctx.arc(tx2, ty2, dotSize * (1 - tr * 0.15), 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r},${g2},${b},${0.55 - tr * 0.09})`;
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  });
+
+  // ── WHITE GLOWING SUN CENTRE ──
+  const pulse2 = (Math.sin(t * 0.055) + 1) / 2;
+  const sunR = 18; // reduced by 8px further
+
+  // Outer soft white glow
+  const sunGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, sunR * 3.5);
+  sunGlow.addColorStop(0, `rgba(255,255,255,${0.18 + pulse2 * 0.12})`);
+  sunGlow.addColorStop(0.4, `rgba(200,220,255,${0.08 + pulse2 * 0.06})`);
+  sunGlow.addColorStop(1, 'rgba(180,200,255,0)');
+  ctx.beginPath();
+  ctx.arc(cx, cy, sunR * 3.5, 0, Math.PI * 2);
+  ctx.fillStyle = sunGlow;
+  ctx.fill();
+
+  // Mid glow
+  const midGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, sunR * 1.8);
+  midGlow.addColorStop(0, `rgba(255,255,255,${0.55 + pulse2 * 0.2})`);
+  midGlow.addColorStop(0.6, `rgba(220,235,255,${0.25 + pulse2 * 0.1})`);
+  midGlow.addColorStop(1, 'rgba(200,220,255,0)');
+  ctx.beginPath();
+  ctx.arc(cx, cy, sunR * 1.8, 0, Math.PI * 2);
+  ctx.fillStyle = midGlow;
+  ctx.fill();
+
+  // White core
+  const coreGlow = ctx.createRadialGradient(cx - 4, cy - 4, 1, cx, cy, sunR);
+  coreGlow.addColorStop(0, 'rgba(255,255,255,1)');
+  coreGlow.addColorStop(0.5, 'rgba(230,240,255,0.95)');
+  coreGlow.addColorStop(1, 'rgba(200,220,255,0.7)');
+  ctx.beginPath();
+  ctx.arc(cx, cy, sunR, 0, Math.PI * 2);
+  ctx.fillStyle = coreGlow;
+  ctx.fill();
+
+  // ── BOKEH ──
+  bokeh.forEach(b => {
+    b.x += b.vx; b.y += b.vy;
+    if (b.x < 0 || b.x > 0.65) b.vx *= -1;
+    if (b.y < 0 || b.y > 1) b.vy *= -1;
+    const bx = b.x * (canvas.width / 0.65);
+    const by = b.y * canvas.height;
+    const ba = ((Math.sin(b.phase + t * b.speed) + 1) / 2) * b.alpha;
+    const bg2 = ctx.createRadialGradient(bx, by, 0, bx, by, b.r * 3.5);
+    bg2.addColorStop(0, `rgba(100,150,255,${ba})`);
+    bg2.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(bx, by, b.r * 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = bg2;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(bx, by, b.r * 0.7, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(200,220,255,${ba * 0.9})`;
+    ctx.fill();
+  });
+
+  t++;
+}
+
+setInterval(() => {
+  const n = new Date();
+  const el = document.getElementById('live-clock');
+  if (el) el.textContent =
+    String(n.getUTCHours()).padStart(2,'0') + ':' +
+    String(n.getUTCMinutes()).padStart(2,'0') + ':' +
+    String(n.getUTCSeconds()).padStart(2,'0') + ' UTC';
+}, 1000);
+
+function loop() { requestAnimationFrame(loop); draw(); }
+loop();
+</script>
+</body>
+</html>

@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIRA — Control Centre</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@200;300;400;600&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  :root {
+    --blue:   #2E2EFF;
+    --cyan:   #00D4FF;
+    --white:  #E8F0FF;
+    --gray:   #6B7A99;
+    --green:  #00FF88;
+    --amber:  #FFB800;
+    --red:    #FF3355;
+    --bg:     #000000;
+    --card:   rgba(10,15,35,0.85);
+    --border: rgba(46,46,255,0.25);
+  }
+
+  html, body {
+    width:100%; height:100%;
+    background: var(--bg);
+    font-family: 'Exo 2', sans-serif;
+    color: var(--white);
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    position: fixed; top:0; left:0; right:0;
+    height: 64px;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(16px);
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: 0 32px; z-index: 100;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 22px; font-weight: 900;
+    letter-spacing: 6px; color: var(--blue);
+    text-shadow: 0 0 20px rgba(46,46,255,0.8);
+  }
+  .logo em { color: var(--white); font-style: normal; }
+  .header-centre {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px; color: var(--cyan);
+    letter-spacing: 4px; text-transform: uppercase;
+  }
+  .header-right {
+    display: flex; align-items: center; gap: 20px;
+    font-family: 'Orbitron', monospace;
+    font-size: 8px; color: var(--white);
+    letter-spacing: 3px;
+  }
+  .status-dot {
+    width:8px; height:8px; border-radius:50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100%{opacity:1;} 50%{opacity:0.4;}
+  }
+
+  /* ── LAYOUT ── */
+  .main {
+    padding: 80px 24px 24px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto;
+    gap: 16px;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: transparent;
+    border: none;
+    padding: 20px;
+    backdrop-filter: blur(12px);
+    position: relative;
+  }
+  .card-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 9px; color: var(--cyan);
+    letter-spacing: 4px; text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  /* ── KPI CARDS (row 1) ── */
+  .kpi { grid-column: span 1; }
+  .kpi-value {
+    font-family: 'Orbitron', monospace;
+    font-size: 36px; font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .kpi-label {
+    font-size: 11px; color: var(--gray);
+    letter-spacing: 1px;
+  }
+  .kpi-change {
+    font-size: 10px; margin-top: 8px;
+    padding: 3px 8px; display: inline-block;
+  }
+  .up   { color: var(--red);   background: rgba(255,51,85,0.1); }
+  .down { color: var(--green); background: rgba(0,255,136,0.1); }
+
+  /* ── GAUGE (row 2, col 1) ── */
+  .gauge-wrap { grid-column: span 1; }
+  .gauge-container {
+    position: relative;
+    width: 180px; height: 180px;
+    margin: 8px auto 0;
+  }
+  #gaugeCanvas {
+    display: block;
+    filter: drop-shadow(0 0 18px rgba(0,212,255,0.55));
+  }
+  .gauge-centre {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .gauge-label-top {
+    font-family: 'Orbitron', monospace;
+    font-size: 9px; color: var(--cyan);
+    letter-spacing: 3px; text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .gauge-score {
+    font-family: 'Orbitron', monospace;
+    font-size: 36px; font-weight: 700;
+    color: var(--white);
+    line-height: 1;
+    text-shadow: 0 0 20px rgba(0,212,255,0.7);
+  }
+  .gauge-label {
+    font-size: 9px; color: var(--gray);
+    letter-spacing: 2px; margin-top: 4px;
+    text-transform: uppercase;
+  }
+
+  /* ── AGENT SECTION (row 2, cols 2-3) ── */
+  .agent-grid-wrap { grid-column: span 2; }
+  .agent-image-wrap {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    border: none;
+  }
+  .agent-image-wrap img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    object-position: center center;
+    opacity: 0.75;
+    display: block;
+    background: #000;
+  }
+  .agent-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(0,0,0,0.45) 0%,
+      rgba(0,20,50,0.35) 100%
+    );
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px;
+  }
+  .agent-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,0,0,0.55);
+    border: 1px solid rgba(0,212,255,0.35);
+    backdrop-filter: blur(6px);
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .agent-badge:hover {
+    border-color: var(--cyan);
+    background: rgba(0,212,255,0.12);
+  }
+  .agent-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .agent-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 7px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--white);
+  }
+
+  /* ── DONUT (row 2, col 4) ── */
+  .donut-wrap { grid-column: span 1; }
+
+  /* ── RISK TREND (row 3, cols 1-2) ── */
+  .trend-wrap { grid-column: span 2; }
+
+  /* ── COMPLIANCE HEATMAP (row 3, cols 3-4) ── */
+  .heatmap-wrap { grid-column: span 2; }
+  .heatmap-grid { display:flex; flex-direction:column; gap:4px; margin-top:8px; }
+  .heatmap-row  { display:flex; gap:4px; align-items:center; }
+  .heatmap-label {
+    font-size:9px; color:var(--gray);
+    width:80px; text-align:right;
+    padding-right:8px; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis;
+  }
+  .heatmap-cell {
+    flex:1; height:24px; display:flex;
+    align-items:center; justify-content:center;
+    font-size:9px; font-weight:600;
+    cursor:pointer; transition:opacity 0.2s;
+  }
+  .heatmap-cell:hover { opacity:0.8; }
+  .heatmap-headers { display:flex; gap:4px; margin-left:88px; margin-bottom:2px; }
+  .heatmap-header {
+    flex:1; font-size:7px; color:var(--gray);
+    text-align:center; letter-spacing:1px;
+  }
+
+  /* ── ALERTS TABLE (row 4, full width) ── */
+  .alerts-wrap { grid-column: span 4; }
+  table { width:100%; border-collapse:collapse; }
+  th {
+    font-family:'Orbitron',monospace;
+    font-size:8px; color:var(--cyan);
+    letter-spacing:3px; text-transform:uppercase;
+    padding:10px 12px; text-align:left;
+    border-bottom:1px solid var(--border);
+  }
+  td {
+    font-size:12px; color:var(--white);
+    padding:10px 12px;
+    border-bottom:1px solid rgba(46,46,255,0.08);
+  }
+  tr:hover td { background:rgba(46,46,255,0.05); }
+  .badge {
+    font-size:9px; padding:3px 8px;
+    font-family:'Orbitron',monospace;
+    letter-spacing:2px;
+  }
+  .critical { background:rgba(255,51,85,0.15);   color:#FF3355; }
+  .high     { background:rgba(255,107,53,0.15);  color:#FF6B35; }
+  .medium   { background:rgba(255,184,0,0.15);   color:#FFB800; }
+  .low      { background:rgba(0,255,136,0.15);   color:#00FF88; }
+
+  /* ── BOTTOM BAR ── */
+  .bottom-bar {
+    position:fixed; bottom:0; left:0; right:0;
+    height:40px; background:rgba(0,0,0,0.85);
+    border-top:1px solid var(--border);
+    display:flex; align-items:center;
+    justify-content:center; gap:48px;
+    font-family:'Orbitron',monospace;
+    font-size:8px; color:var(--white);
+    letter-spacing:3px; z-index:100;
+  }
+  .bottom-item { display:flex; align-items:center; gap:8px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="logo">AI<em>RA</em></div>
+  <div class="header-centre">Control Centre — Screen 03</div>
+  <div class="header-right">
+    <div class="status-dot"></div>
+    <span>All Systems Operational</span>
+    <span id="clock">--:--:-- UTC</span>
+  </div>
+</div>
+
+<!-- Main Dashboard Grid -->
+<div class="main">
+
+  <!-- KPI 1 — Total Identities -->
+  <div class="card kpi">
+    <div class="card-title">Total Identities</div>
+    <div class="kpi-value" style="color:#E8F0FF;text-shadow:0 0 20px rgba(0,212,255,0.7)">1,247</div>
+    <div class="kpi-label">Monitored across 12 sectors</div>
+    <div class="kpi-change up">↑ 23 this week</div>
+  </div>
+
+  <!-- KPI 2 — Critical Alerts -->
+  <div class="card kpi">
+    <div class="card-title">Critical Alerts</div>
+    <div class="kpi-value" style="color:#E8F0FF;text-shadow:0 0 20px rgba(0,212,255,0.7)">3</div>
+    <div class="kpi-label">Requiring immediate action</div>
+    <div class="kpi-change up">↑ 1 since yesterday</div>
+  </div>
+
+  <!-- KPI 3 — Compliance Score -->
+  <div class="card kpi">
+    <div class="card-title">Compliance Score</div>
+    <div class="kpi-value" style="color:#E8F0FF;text-shadow:0 0 20px rgba(0,212,255,0.7)">87.5%</div>
+    <div class="kpi-label">Across 14 frameworks</div>
+    <div class="kpi-change down">↑ 2.3% this month</div>
+  </div>
+
+  <!-- KPI 4 — Risk Score -->
+  <div class="card kpi">
+    <div class="card-title">Average Risk Score</div>
+    <div class="kpi-value" style="color:#E8F0FF;text-shadow:0 0 20px rgba(0,212,255,0.7)">42.8</div>
+    <div class="kpi-label">Organisation-wide</div>
+    <div class="kpi-change down">↓ 3.1 this week</div>
+  </div>
+
+  <!-- Gauge -->
+  <div class="card gauge-wrap">
+    <div class="card-title">AIRA Health Score</div>
+    <div class="gauge-container">
+      <canvas id="gaugeCanvas" width="180" height="180"></canvas>
+      <div class="gauge-centre">
+        <div class="gauge-label-top">HEALTH</div>
+        <div class="gauge-score" id="gaugeVal">94</div>
+        <div class="gauge-label">/ 100</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agent Section -->
+  <div class="card agent-grid-wrap">
+    <div style="text-align:center;margin-bottom:12px;">
+      <div class="card-title">8 Active Agents</div>
+    </div>
+    <div class="agent-image-wrap">
+      <img id="agentImg" src="/frontend/agents_bg.png" alt="AIRA Agents">
+    </div>
+  </div>
+
+  <!-- Donut -->
+  <div class="card donut-wrap">
+    <div class="card-title">Identity Types</div>
+    <div style="position:relative;width:100%;height:220px;">
+      <div style="position:absolute;top:0;left:0;display:flex;align-items:center;gap:5px;">
+        <div style="width:10px;height:10px;background:#2E2EFF;flex-shrink:0;"></div>
+        <span style="font-size:9px;color:#6B7A99;font-family:'Exo 2',sans-serif;">Human (850)</span>
+      </div>
+      <div style="position:absolute;top:0;right:0;display:flex;align-items:center;gap:5px;">
+        <div style="width:10px;height:10px;background:#00D4FF;flex-shrink:0;"></div>
+        <span style="font-size:9px;color:#6B7A99;font-family:'Exo 2',sans-serif;">Service Acc. (220)</span>
+      </div>
+      <canvas id="donutChart" width="160" height="160" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);"></canvas>
+      <div style="position:absolute;bottom:0;left:0;display:flex;align-items:center;gap:5px;">
+        <div style="width:10px;height:10px;background:#00FF88;flex-shrink:0;"></div>
+        <span style="font-size:9px;color:#6B7A99;font-family:'Exo 2',sans-serif;">Robot (130)</span>
+      </div>
+      <div style="position:absolute;bottom:0;right:0;display:flex;align-items:center;gap:5px;">
+        <div style="width:10px;height:10px;background:#FFB800;flex-shrink:0;"></div>
+        <span style="font-size:9px;color:#6B7A99;font-family:'Exo 2',sans-serif;">IoT Device (47)</span>
+      </div>
+    </div>
+    <div id="bottomClock" style="text-align:center;font-family:'Orbitron',monospace;font-size:11px;color:var(--cyan);letter-spacing:3px;margin-top:8px;">--:--:-- UTC</div>
+  </div>
+
+  <!-- Risk Trend -->
+  <div class="card trend-wrap">
+    <div class="card-title">Risk Score Trend — 30 Days</div>
+    <canvas id="trendChart" width="400" height="140"></canvas>
+  </div>
+
+  <!-- Compliance Heatmap -->
+  <div class="card heatmap-wrap">
+    <div class="card-title">Compliance Heatmap — Top Sectors × Frameworks</div>
+    <div id="heatmap"></div>
+  </div>
+
+  <!-- Alerts Table -->
+  <div class="card alerts-wrap">
+    <div class="card-title">Active Alerts</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Identity</th>
+          <th>Alert Type</th>
+          <th>Severity</th>
+          <th>Agent</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="alertsTable"></tbody>
+    </table>
+    <div id="bottomClock" style="text-align:right;font-family:'Orbitron',monospace;font-size:11px;color:var(--cyan);letter-spacing:3px;margin-top:12px;">--:--:-- UTC</div>
+  </div>
+
+</div>
+
+
+
+<script>
+window.onload = function() {
+
+// ── IMAGE PATH FIX ──
+const agentImg = document.getElementById('agentImg');
+if (window.location.protocol !== 'file:') {
+  agentImg.src = '/frontend/agents_bg.png';
+}
+
+// ── CLOCK ──
+function updateClock() {
+  const n = new Date();
+  const t = String(n.getUTCHours()).padStart(2,'0')+':'+
+            String(n.getUTCMinutes()).padStart(2,'0')+':'+
+            String(n.getUTCSeconds()).padStart(2,'0')+' UTC';
+  document.getElementById('clock').textContent      = t;
+  document.getElementById('bottomClock').textContent = t;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── GAUGE — circular RAM-style ──
+function drawGauge(val) {
+  const c   = document.getElementById('gaugeCanvas');
+  const ctx = c.getContext('2d');
+  const W = 180, H = 180;
+  ctx.clearRect(0, 0, W, H);
+  const cx = W/2, cy = H/2, r = 74;
+  const startAngle = Math.PI * 0.75;
+  const fullAngle  = Math.PI * 1.5;
+  const endAngle   = startAngle + (val / 100) * fullAngle;
+
+  // Outer dark ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + 10, 0, Math.PI*2);
+  ctx.strokeStyle = 'rgba(0,30,60,0.8)';
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  // Background track
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, startAngle + fullAngle);
+  ctx.strokeStyle = 'rgba(0,60,100,0.35)';
+  ctx.lineWidth = 16;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Glow layer (wider, soft)
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, endAngle);
+  ctx.strokeStyle = 'rgba(0,212,255,0.18)';
+  ctx.lineWidth = 28;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Main arc
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, endAngle);
+  ctx.strokeStyle = '#00D4FF';
+  ctx.lineWidth = 14;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Bright inner highlight
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, endAngle);
+  ctx.strokeStyle = 'rgba(180,240,255,0.6)';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+
+}
+drawGauge(94);
+
+// ── AGENTS ──
+const agents = [
+  {name:'IGA',         status:'online', color:'#00FF88'},
+  {name:'PAM',         status:'online', color:'#00FF88'},
+  {name:'CIAM',        status:'online', color:'#00FF88'},
+  {name:'MACHINE',     status:'online', color:'#00FF88'},
+  {name:'THREAT',      status:'alert',  color:'#FF3355'},
+  {name:'REMEDIATION', status:'online', color:'#00FF88'},
+];
+
+// ── DONUT ──
+// ── DONUT CHART — pure Canvas ──
+(function() {
+  const c = document.getElementById('donutChart');
+  if (!c) { console.log('donutChart not found'); return; }
+  const ctx = c.getContext('2d');
+  const cx = 80, cy = 80, r = 60;
+  const data   = [850, 220, 130, 47];
+  const colors = ['#2E2EFF','#00D4FF','#00FF88','#FFB800'];
+  const total  = data.reduce((a,b) => a+b, 0);
+  let angle = -Math.PI / 2;
+  data.forEach((val, i) => {
+    const slice = (val / total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, angle, angle + slice);
+    ctx.closePath();
+    ctx.fillStyle = colors[i];
+    ctx.fill();
+    angle += slice;
+  });
+  // Hole
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.55, 0, Math.PI * 2);
+  ctx.fillStyle = '#000000';
+  ctx.fill();
+  console.log('Donut drawn');
+})();
+
+// ── RISK TREND — pure Canvas ──
+(function() {
+  const c = document.getElementById('trendChart');
+  if (!c) { console.log('trendChart not found'); return; }
+  const ctx = c.getContext('2d');
+  const W = 400, H = 140;
+  const pl = 32, pr = 10, pt = 10, pb = 28;
+  const scores = [42,38,45,51,48,55,60,58,52,48,44,50,55,62,58,54,50,46,52,57,60,55,48,44,50,55,58,52,48,44];
+  const gW = W - pl - pr;
+  const gH = H - pt - pb;
+  const px = i => pl + (i / (scores.length - 1)) * gW;
+  const py = v => pt + gH - (v / 100) * gH;
+  // Background
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(0, 0, W, H);
+  // Grid
+  [0,25,50,75,100].forEach(v => {
+    ctx.beginPath();
+    ctx.moveTo(pl, py(v));
+    ctx.lineTo(W - pr, py(v));
+    ctx.strokeStyle = 'rgba(46,46,255,0.1)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = '#6B7A99';
+    ctx.font = '9px sans-serif';
+    ctx.fillText(v, 2, py(v) + 3);
+  });
+  // Fill
+  ctx.beginPath();
+  ctx.moveTo(px(0), py(scores[0]));
+  scores.forEach((s,i) => ctx.lineTo(px(i), py(s)));
+  ctx.lineTo(px(scores.length-1), H - pb);
+  ctx.lineTo(px(0), H - pb);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(46,46,255,0.12)';
+  ctx.fill();
+  // Line
+  ctx.beginPath();
+  ctx.moveTo(px(0), py(scores[0]));
+  scores.forEach((s,i) => ctx.lineTo(px(i), py(s)));
+  ctx.strokeStyle = '#2E2EFF';
+  ctx.lineWidth = 2;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+  // X labels
+  [0,5,10,15,20,25,29].forEach(i => {
+    ctx.fillStyle = '#6B7A99';
+    ctx.font = '8px sans-serif';
+    ctx.fillText('D-'+(30-i), px(i)-8, H-8);
+  });
+  console.log('Trend drawn');
+})();
+
+// ── HEATMAP ──
+const sectors    = ['Finance','Defense','Healthcare','Energy','IT'];
+const frameworks = ['HIPAA','GDPR','PCI-DSS','SOX','NIST'];
+const heatData   = sectors.map(()=>frameworks.map(()=>Math.round(60+Math.random()*38)));
+
+function scoreColor(s){
+  if(s>=85) return '#1D9E75';
+  if(s>=70) return '#5BC8A0';
+  if(s>=55) return '#EF9F27';
+  return '#E24B4A';
+}
+
+let html = '<div class="heatmap-headers">';
+frameworks.forEach(f=>{ html+=`<div class="heatmap-header">${f}</div>`; });
+html += '</div><div class="heatmap-grid">';
+
+sectors.forEach((s,si)=>{
+  html += '<div class="heatmap-row">';
+  html += `<div class="heatmap-label">${s}</div>`;
+  frameworks.forEach((_,fi)=>{
+    const score = heatData[si][fi];
+    html += `<div class="heatmap-cell" style="background:${scoreColor(score)};color:#fff">${score}</div>`;
+  });
+  html += '</div>';
+});
+html += '</div>';
+document.getElementById('heatmap').innerHTML = html;
+
+// ── ALERTS TABLE ──
+const alerts = [
+  {time:'05:22 UTC', identity:'svc_database_admin', type:'Impossible Travel',    severity:'critical', agent:'THREAT'},
+  {time:'04:15 UTC', identity:'john.smith',          type:'SoD Violation',         severity:'high',     agent:'IGA'},
+  {time:'03:48 UTC', identity:'Assembly Robot AR-7', type:'Cert Expiry Warning',   severity:'medium',   agent:'MACHINE'},
+  {time:'02:30 UTC', identity:'CUST-00442',          type:'Account Takeover Risk', severity:'high',     agent:'CIAM'},
+  {time:'01:12 UTC', identity:'barbara.frank',       type:'Excessive Privileges',  severity:'medium',   agent:'PAM'},
+];
+
+const tbody = document.getElementById('alertsTable');
+alerts.forEach(a=>{
+  tbody.innerHTML += `
+    <tr>
+      <td>${a.time}</td>
+      <td>${a.identity}</td>
+      <td>${a.type}</td>
+      <td><span class="badge ${a.severity}">${a.severity.toUpperCase()}</span></td>
+      <td style="color:#00D4FF;font-family:'Orbitron',monospace;font-size:10px">${a.agent}</td>
+      <td><span class="badge medium">OPEN</span></td>
+    </tr>`;
+});
+}; // end window.onload
+</script>
+</body>
+</html>

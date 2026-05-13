@@ -1,0 +1,69 @@
+# ── AIRA .gitignore ──
+
+# Environment variables — NEVER push to GitHub
+.env
+.env.*
+*.env
+env.txt
+
+# Python virtual environments
+venv/
+env/
+.venv/
+myenv/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Database files
+aira.db
+*.db
+*.sqlite
+*.sqlite3
+
+# ChromaDB vector store — auto generated
+database/chromadb_store/
+database/memory/
+database/audit_trail/
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node modules
+node_modules/
+
+# Python build files
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Test cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.user
+
+# Julia compiled files
+*.ji
+*.so
+
+# Temporary files
+*.tmp
+*.temp
+opening_zip_files_temp_detele/
